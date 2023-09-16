@@ -2,6 +2,7 @@ import User from "../models/user.model.js";
 import appError from "../utils/error.utils.js";
 import cloudinary from 'cloudinary';
 import fs from 'fs/promises';
+import sendEmail from "../utils/sendEmail.js";
 
 const cookieOptions ={
     maxAge: 7*24*60*60*1000,
@@ -131,7 +132,7 @@ const getProfile = async(req, res)=> {
 
 
 }
-const forgotPassword=async (req, res )=>{
+const forgotPassword=async (req, res, next )=>{
     const {email}= req.body;
     if(!email){
         return next(new appError('Email is requried', 400))
@@ -145,8 +146,11 @@ const forgotPassword=async (req, res )=>{
 
     await user.save();
 
-    const resetPasswordURL = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+    // const resetPasswordURL = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
+    console.log(resetPasswordURL)
+    const subject= 'Reset Password'
+    const message= `You can reset password by clicking <a href=${resetPasswordURL} target="_blank"> Reset Your Password</a>\n If the above link does not work for some reason then copy and paste link in new tab ${resetPasswordURL}.\n If you have not requested this, kindly ignore.`
     try {
         await sendEmail(email, subject, message)
 
@@ -160,9 +164,30 @@ const forgotPassword=async (req, res )=>{
         return next(new appError(e.message, 500))
     }
 }
-const resetPassword= ()=>{
+const resetPassword=async (req, res, next)=>{
+    const {resetToken}= req.params;
 
+    const {password}= req.body;
+
+    const forgotPasswordToken = crypto
+    .create('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+    const user= await User.findOne({
+        forgotPasswordToken,
+        forgotPasswordExpiry: {$gt: Date.now() }
+    })
+
+    if(!user)
+{
+    return next(new appError('Token is invalid or expired, Please try again', 400))
 }
+    user.password= password;
+
+    user.save();
+}
+
 
 export {
     register,
