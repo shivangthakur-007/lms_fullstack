@@ -2,8 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from'cookie-parser'; 
 import morgan from 'morgan';
+// import rout from './routes/user.route.js';
 import errorMiddleware from './middlewares/error.Middleware.js';
-import rout from './routes/user.route.js';
+import userRoute from './routes/user.route.js';
 
 const app= express();
 
@@ -22,7 +23,7 @@ app.use('/ping', function(req, res){
     res.send('pong')
 })
 
-app.use('/api/v1/user', rout);
+app.use('/api/vi/user', userRoute);
 
 app.all('*', (req, res)=>{
     res.status(404).send('OOPS!! Page not found')

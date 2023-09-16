@@ -1,6 +1,7 @@
-import errorMiddleware from "../middlewares/error.Middleware.js";
 import User from "../models/user.model.js";
 import appError from "../utils/error.utils.js";
+import cloudinary from 'cloudinary';
+import fs from 'fs/promises';
 
 const cookieOptions ={
     maxAge: 7*24*60*60*1000,
@@ -8,7 +9,7 @@ const cookieOptions ={
     secure: true
 }
 
-const register = async (req, res) => {
+const register = async (req, res, next) => {
     const {fullName, email, password}= req.body;
     if(!fullName || !email || !password){
         return next(new appError('All fields are required', 400));
@@ -24,7 +25,7 @@ const register = async (req, res) => {
         password,
         avatar: {
             public_id: email,
-            secure_url: 'https://img.freepik.com/free-photo/tall-lighthouse-north-sea-cloudy-sky_181624-49637.jpg?size=626&ext=jpg',
+            secure_url: 'https://res.cloudinary.com/du9jzqlpt/image/upload/v1674647316/avatar_drzgxv.jpg',
         },
 
     });
@@ -32,7 +33,32 @@ const register = async (req, res) => {
     if(!user){
         return next(new appError('User Registration failed, please try again', 400))
     }
+    console.log('file detail >', JSON.stringify(req.file))
+
     // TODO: file upload
+    if(req.file){
+        try {
+            const result=await cloudinary.v2.uploader.upload(req.file.path, {
+                folder: 'lms',
+                width: 250,
+                height: 250,
+                gravity: 'faces',
+                crop: 'fill',
+            })
+            if(result){
+                user.avatar.public_id = result.public_id;
+                user.avatar.secure_url= result.secure_url;
+
+                //Remove file from server
+                fs.rm(`uploads/${req.file.filename}`)
+            }
+        } catch (e) {
+            return next(
+                new appError(e || 'File not Upload, please try again', 500)
+            )
+        }
+    }
+
     await user.save();
 
     user.password= undefined;
@@ -105,10 +131,44 @@ const getProfile = async(req, res)=> {
 
 
 }
+const forgotPassword=async (req, res )=>{
+    const {email}= req.body;
+    if(!email){
+        return next(new appError('Email is requried', 400))
+    }
+    const user= await User.findOne({email});
+    if(!user){
+        return next(new appError('Email not registered', 400))
+    }
+
+    const resetToken = await user.generatePasswordResetToken();
+
+    await user.save();
+
+    const resetPasswordURL = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+
+    try {
+        await sendEmail(email, subject, message)
+
+        res.status(201).json({
+            success:true,
+            message: `reset Password token  has been sent to  ${email} successfully`
+        })
+    } catch (e) {
+        user.forgotPasswordExpiry= undefined;  // security purpose code jab na chale
+        user.forgotPasswordToken= undefined;  
+        return next(new appError(e.message, 500))
+    }
+}
+const resetPassword= ()=>{
+
+}
 
 export {
     register,
     login,
     logout,
-    getProfile
+    getProfile,
+    forgotPassword,
+    resetPassword
 }
