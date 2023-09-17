@@ -5,6 +5,7 @@ import morgan from 'morgan';
 // import rout from './routes/user.route.js';
 import errorMiddleware from './middlewares/error.Middleware.js';
 import userRoute from './routes/user.route.js';
+import courseRoute from './routes/course.route.js'
 
 const app= express();
 
@@ -25,6 +26,7 @@ app.use('/ping', function(req, res){
 })
 
 app.use('/api/vi/user', userRoute);
+app.use('/api/vi/courses', courseRoute);
 
 app.all('*', (req, res)=>{
     res.status(404).send('OOPS!! Page not found')

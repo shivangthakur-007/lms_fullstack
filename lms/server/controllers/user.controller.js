@@ -76,17 +76,14 @@ const register = async (req, res, next) => {
     })
 };
 
-const login =async (req, res)=> {
+const login =async (req, res, next)=> {
     try {
     const {email, password}= req.body;
 
     if(!email || !password){
         return next(new appError('All fields are required', 400))
     }
-    const user= await user.findOne({
-        email, 
-        password,
-    }).select('+password');
+    const user= await User.findOne({ email }).select('+password');
 
     if(!user || !user.comparePassword(password)){
         return next(new appError('Email or password does not match', 400));
@@ -100,9 +97,9 @@ const login =async (req, res)=> {
     res.status(200).json({
         success: true,
         message: 'user login successfully',
-        user
+        user,
     })} catch (error) {
-        return next(new appError(e.message, 500));
+        return next(new appError(error.message, 500));
     }
 }
 
@@ -117,10 +114,11 @@ const logout = (req, res)=> {
         message: 'User Logged Out Successfully'
     })
 }
-const getProfile = async(req, res)=> {
+const getProfile = async(req, res, next)=> {
     try {
      const userID= req.user.id;
     const user= await User.findById(userID)
+    console.log(userID)
     
     res.status(200).json({
         success: true,
@@ -128,7 +126,7 @@ const getProfile = async(req, res)=> {
         user
     })
     } catch (error) {
-            return next(new appError('Failed to fetch profile ', 400))
+            return next(new appError(error.message, 400))
     }
 
 
@@ -204,7 +202,7 @@ const changePassword= async(req, res, next)=>{
     if(!oldPassword || !newPassword){
         return next(new appError('All fields are mandatory', 400))
     }
-    const user= await User.findById(id.select("+password"));
+    const user= await User.findById(id).select("+password");
 
     if(!user){
         return next(new appError('User doesnot exist', 400))

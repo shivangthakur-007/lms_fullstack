@@ -27,7 +27,7 @@ const  userSchema= new Schema({
         select: false,
     },
     avatar:{
-        public_id: {
+        public_id: {    
             type: 'String',
         },
         secure_url: {
