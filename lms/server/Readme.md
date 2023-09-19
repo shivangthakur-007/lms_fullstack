@@ -1,6 +1,6 @@
 ->npm init
 ->installing dependencies 
-->npm i morgan nodemon bcryptjs cloudinary cookie-parser cors dotenv express jsonwebtoken mongoose multer nodemailer --save
+->npm i morgan nodemon bcryptjs cloudinary cookie-parser cors dotenv express jsonwebtoken mongoose multer nodemailer razorpay --save
 ***
 making a port on server => localhost:port by using listen
 by using express we start the process

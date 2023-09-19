@@ -12,6 +12,6 @@ rout.get('/me', isLoggedIn, getProfile)
 rout.post('/reset', forgotPassword)
 rout.post('/reset/:resetToken', resetPassword)
 rout.post('/change-password', isLoggedIn, changePassword)
-rout.put('/update', isLoggedIn, upload.single('avatar'), updateUser)
+rout.put('/update/:id', isLoggedIn, upload.single('avatar'), updateUser)
 
 export default rout;

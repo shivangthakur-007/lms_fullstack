@@ -30,7 +30,7 @@ const register = async (req, res, next) => {
       secure_url:
         "https://res.cloudinary.com/dvhcu6di8/image/upload/v1691039851/lms/cuoyoiibnbb6xhldxru9.png",
     },
-    role: "ADMIN",
+    role: "USER",
   });
 
   if (!user) {
@@ -228,17 +228,18 @@ const changePassword = async (req, res, next) => {
 };
 
 const updateUser = async (req, res, next) => {
+ try{ 
   const { fullName } = req.body;
-  const { id } = req.user.id;
+  const { id } = req.params;
 
   const user = await User.findById(id);
   if (!user) {
     return next(new appError("User do not exist", 400));
   }
-
-  if (req.fullName) {
+  if (fullName) {
     user.fullName = fullName;
   }
+  console.log(user.fullName)
 
   if (req.file) {
     await cloudinary.v2.uploader.destroy(user.avatar.public_id);
@@ -270,7 +271,12 @@ const updateUser = async (req, res, next) => {
   res.status(200).json({
     success: true,
     message: "User details uploaded successfully",
+    user,
   });
+
+}catch(e){
+  return next(new appError(e.message, 500))
+}
 };
 
 export {
