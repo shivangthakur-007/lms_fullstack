@@ -30,7 +30,7 @@ const register = async (req, res, next) => {
       secure_url:
         "https://res.cloudinary.com/dvhcu6di8/image/upload/v1691039851/lms/cuoyoiibnbb6xhldxru9.png",
     },
-    role: "USER",
+    // role: "USER",
   });
 
   if (!user) {

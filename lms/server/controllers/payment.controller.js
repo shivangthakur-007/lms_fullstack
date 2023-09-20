@@ -1,3 +1,5 @@
+import { config } from "dotenv";
+config();
 import Payment from "../models/payment.model.js";
 import User from "../models/user.model.js";
 import appError from "../utils/error.utils.js";
@@ -32,11 +34,11 @@ export const buySubscription = async (req, res, next) => {
       plan_id: process.env.RAZORPAY_PLAN_ID,
       customer_notify: 1,
     });
-    // console.log(subscription);
+    // console.log(plan_id);
 
     user.subscription.id = subscription.id;
     user.subscription.status = subscription.status;
-    console.log(user.subscription.id, user.subscription.status);
+    // console.log(user.subscription.id, user.subscription.status);
 
     await user.save();
 
@@ -121,18 +123,18 @@ export const cancelSubscription = async (req, res, next) => {
 };
 
 export const allPayments = async (req, res, next) => {
-    try {
-        const { count } = req.querry;
+  try {
+    const { count } = req.querry;
 
-        const payments = await razorpay.subscriptions.all({
-          count: count || 10,
-        });
-        res.status(200).json({
-          success: true,
-          message: "ALl payments",
-          subscriptions,
-        });
-    } catch (e) {
-        return next(new appError(e.message, 500))
-    }
+    const payments = await razorpay.subscriptions.all({
+      count: count || 10,
+    });
+    res.status(200).json({
+      success: true,
+      message: "ALl payments",
+      subscriptions,
+    });
+  } catch (e) {
+    return next(new appError(e.message, 500));
+  }
 };
