@@ -39,7 +39,7 @@ const register = async (req, res, next) => {
     );
   }
 
-  console.log("file detail >", JSON.stringify(req.file));
+  // console.log("file detail >", JSON.stringify(req.file));
 
   // TODO: file upload
   if (req.file) {
@@ -109,15 +109,19 @@ const login = async (req, res, next) => {
 };
 
 const logout = (req, res) => {
-  res.cookie("token", null, {
-    success: true,
-    maxAge: 0,
-    httpOnly: true,
-  });
-  res.status(200).json({
-    success: true,
-    message: "User Logged Out Successfully",
-  });
+  try {
+    res.cookie("token", null, {
+      success: true,
+      maxAge: 0,
+      httpOnly: true,
+    });
+    res.status(200).json({
+      success: true,
+      message: "User Logged Out Successfully",
+    });
+  } catch (e) {
+    return next(new appError(e.message, 400))
+  }
 };
 const getProfile = async (req, res, next) => {
   try {
